@@ -91,7 +91,7 @@ async function getNnue(key): Promise<Uint8Array | null> {
     });
 }
 
-async function prepareForOffline(): Promise<void> {
+async function loadStockfish(): Promise<void> {
     console.log('Preparing for offline use...');
     // Wait for service worker to be ready so our fetch requests can be intercepted
     await navigator.serviceWorker.ready;
@@ -102,7 +102,15 @@ async function prepareForOffline(): Promise<void> {
     if (!smallExists || !bigExists) {
         console.log("Asking to download NNUE files...");
         showDownloadDialog();
+        return;
     }
+
+    // Check if SharedArrayBuffer is supported.
+    if (typeof SharedArrayBuffer === 'undefined') {
+        console.warn('SharedArrayBuffer is not supported. Stockfish NNUE will not work.');
+        return;
+    }
+    console.log('Loading Stockfish...');
 }
 
 function showDownloadDialog(): void {
@@ -211,7 +219,8 @@ async function downloadAllNnueFiles(): Promise<void> {
 
         console.log('All NNUE files downloaded successfully');
         hideDownloadDialog();
-
+        // Reload to re-initialize. This also fixes the headers needed for SharedArrayBuffer.
+        window.location.reload();
     } catch (error) {
         console.error('Error downloading NNUE files:', error);
         alert('Failed to download files. Please try again.');
@@ -940,10 +949,7 @@ $(async function () {
         });
     }
 
-    await prepareForOffline();
-
-    // TODO: initialize stockfish (can be settimeout.)
-    // Load Stockfish after a short delay to let the UI initialize
-    // setTimeout(loadStockfish, 1000);
+    // Initialize Stockfish in the background.
+    setTimeout(loadStockfish, 100);
 });
 

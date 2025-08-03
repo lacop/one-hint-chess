@@ -53,6 +53,17 @@ self.addEventListener('activate', event => {
   );
 });
 
+function responseWithHeaders(response) {
+  const newHeaders = new Headers(response.headers);
+  newHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
+  newHeaders.set("Cross-Origin-Opener-Policy", "same-origin");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: newHeaders
+  });
+}
+
 self.addEventListener('fetch', event => {
   if (event.request.url.endsWith('.nnue')) {
     return; // Skip caching for .nnue files
@@ -61,7 +72,7 @@ self.addEventListener('fetch', event => {
     caches.match(event.request)
       .then(response => {
         if (response) {
-          return response;
+          return responseWithHeaders(response);
         }
         
         const fetchRequest = event.request.clone();
@@ -77,8 +88,8 @@ self.addEventListener('fetch', event => {
             .then(cache => {
               cache.put(event.request, responseToCache);
             });
-          
-          return response;
+
+          return responseWithHeaders(response);
         });
       })
   );
