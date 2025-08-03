@@ -479,14 +479,14 @@ function startClock(): void {
             whiteTimeMs = Math.max(0, whiteTimeMs - elapsed);
             if (whiteTimeMs === 0) {
                 stopClock();
-                showGameOverModal('Black wins!', 'White ran out of time');
+                showGameOverModal('Black wins', 'on time');
                 return;
             }
         } else {
             blackTimeMs = Math.max(0, blackTimeMs - elapsed);
             if (blackTimeMs === 0) {
                 stopClock();
-                showGameOverModal('White wins!', 'Black ran out of time');
+                showGameOverModal('White wins', 'on time');
                 return;
             }
         }
@@ -516,18 +516,47 @@ function addTimeIncrement(): void {
     }
 }
 
-function updateStatus(): void {
-    let moveColor = 'White';
-    if (game.turn() === 'b') {
-        moveColor = 'Black';
-    }
-
+function getGameResult(): { winner: string; reason: string } {
+    const currentPlayer = game.turn();
+    const opponentColor = currentPlayer === 'w' ? 'Black' : 'White';
+    
     if (game.isCheckmate()) {
-        stopClock();
-        showGameOverModal(moveColor === 'White' ? 'Black wins!' : 'White wins!', 'Checkmate');
+        return { 
+            winner: `${opponentColor} wins`, 
+            reason: 'by checkmate' 
+        };
+    } else if (game.isStalemate()) {
+        return { 
+            winner: 'Draw', 
+            reason: 'by stalemate' 
+        };
+    } else if (game.isThreefoldRepetition()) {
+        return { 
+            winner: 'Draw', 
+            reason: 'by repetition' 
+        };
+    } else if (game.isInsufficientMaterial()) {
+        return { 
+            winner: 'Draw', 
+            reason: 'by insufficient material' 
+        };
     } else if (game.isDraw()) {
+        // This catches other draw conditions like 50-move rule
+        return { 
+            winner: 'Draw', 
+            reason: 'by 50-move rule' 
+        };
+    }
+    
+    return { winner: '', reason: '' };
+}
+
+function updateStatus(): void {
+    const result = getGameResult();
+    
+    if (result.winner) {
         stopClock();
-        showGameOverModal('Draw!', 'Game drawn');
+        showGameOverModal(result.winner, result.reason);
     }
 }
 
@@ -704,9 +733,10 @@ function openLichessAnalysis(pgn: string): void {
 }
 
 function showGameOverModal(winner: string, reason: string): void {
-    saveGameToArchive(winner);
+    const fullResult = `${winner} ${reason}`;
+    saveGameToArchive(fullResult);
     $('#gameOverTitle').text('Game Over');
-    $('#gameOverMessage').text(`${winner} - ${reason}`);
+    $('#gameOverMessage').text(fullResult);
     $('#gameOverModal').show();
 }
 
