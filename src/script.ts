@@ -1,6 +1,10 @@
 import { Chess } from 'chess.js';
 import $ from 'jquery';
 
+// Make jQuery available globally for chessboard.js
+(window as any).$ = $;
+(window as any).jQuery = $;
+
 declare var Chessboard: any;
 
 let board: any = null;
@@ -509,6 +513,19 @@ function setComputerMoveThinking(): void {
         .css('--progress', '0%');
 }
 
+async function loadChessboard(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        // Import the chessboard script as a URL using Vite's ?url suffix
+        import('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js?url').then((module) => {
+            script.src = module.default;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load chessboard.js'));
+            document.head.appendChild(script);
+        }).catch(reject);
+    });
+}
+
 async function makeComputerMove(): Promise<void> {
     if (!stockfish || !isStockfishReady || game.isGameOver()) {
         return;
@@ -720,9 +737,15 @@ function disableScroll(): void {
 }
 
 // Initialize when DOM is ready
-$(function () {
+$(async function () {
     disableScroll();
-    initializeChess();
+    
+    try {
+        await loadChessboard();
+        initializeChess();
+    } catch (error) {
+        console.error('Failed to initialize chess game:', error);
+    }
 });
 
 // Load Stockfish after a short delay to let the UI initialize
