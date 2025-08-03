@@ -5,9 +5,9 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
   if (!fs.existsSync(dirPath)) {
     return arrayOfFiles;
   }
-  
+
   const files = fs.readdirSync(dirPath);
-  
+
   files.forEach(file => {
     const fullPath = path.join(dirPath, file);
     if (fs.statSync(fullPath).isDirectory()) {
@@ -18,7 +18,7 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
       arrayOfFiles.push(webPath);
     }
   });
-  
+
   return arrayOfFiles;
 }
 
@@ -54,6 +54,9 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  if (event.request.url.endsWith('.nnue')) {
+    return; // Skip caching for .nnue files
+  }
   event.respondWith(
     caches.match(event.request)
       .then(response => {

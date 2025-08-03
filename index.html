@@ -157,6 +157,22 @@
         <div class="download-dialog-content">
             <h3>Download Required</h3>
             <p>Need to download ~80MB for Stockfish. Proceed?</p>
+            <div id="progressSection" class="progress-section" style="display: none;">
+                <div class="progress-item">
+                    <label>Small NNUE File:</label>
+                    <div class="progress-bar">
+                        <div id="smallProgress" class="progress-fill"></div>
+                    </div>
+                    <span id="smallPercent" class="progress-text">0%</span>
+                </div>
+                <div class="progress-item">
+                    <label>Large NNUE File:</label>
+                    <div class="progress-bar">
+                        <div id="bigProgress" class="progress-fill"></div>
+                    </div>
+                    <span id="bigPercent" class="progress-text">0%</span>
+                </div>
+            </div>
             <div class="download-dialog-buttons">
                 <button id="downloadBtn" class="download-btn">Download</button>
                 <button id="cancelDownloadBtn" class="cancel-download-btn">Cancel</button>

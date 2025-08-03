@@ -1092,6 +1092,54 @@ button.thinking:hover {
     transform: translateY(-1px);
 }
 
+.progress-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.progress-item label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 120px;
+    text-align: left;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 20px;
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 35px;
+    text-align: right;
+}
+
 /* Mobile responsive for download dialog */
 @media (max-width: 768px) {
     .download-dialog-content {
@@ -1114,6 +1162,20 @@ button.thinking:hover {
         padding: 10px 20px;
         font-size: 14px;
         min-width: 100px;
+    }
+
+    .progress-item label {
+        font-size: 12px;
+        min-width: 100px;
+    }
+
+    .progress-bar {
+        height: 18px;
+    }
+
+    .progress-text {
+        font-size: 11px;
+        min-width: 30px;
     }
 }
 
@@ -1142,5 +1204,28 @@ button.thinking:hover {
         padding: 8px 16px;
         font-size: 13px;
         min-width: 90px;
+    }
+
+    .progress-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .progress-item label {
+        font-size: 11px;
+        min-width: auto;
+        text-align: left;
+    }
+
+    .progress-bar {
+        height: 16px;
+        width: 100%;
+    }
+
+    .progress-text {
+        font-size: 10px;
+        min-width: auto;
+        align-self: flex-end;
     }
 }

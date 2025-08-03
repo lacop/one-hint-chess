@@ -119,6 +119,119 @@ function hideDownloadDialog(): void {
     }
 }
 
+async function downloadNnueFile(filename: string, progressElementId: string, percentElementId: string): Promise<void> {
+    const url = `/fish/${filename}`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to download ${filename}: ${response.statusText}`);
+        }
+
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+            throw new Error('Failed to get response reader');
+        }
+
+        const chunks: Uint8Array[] = [];
+        let downloaded = 0;
+
+        const progressElement = document.getElementById(progressElementId) as HTMLElement;
+        const percentElement = document.getElementById(percentElementId) as HTMLElement;
+
+        while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) break;
+
+            chunks.push(value);
+            downloaded += value.length;
+
+            if (total > 0) {
+                const progress = (downloaded / total) * 100;
+                if (progressElement) {
+                    progressElement.style.width = `${progress}%`;
+                }
+                if (percentElement) {
+                    percentElement.textContent = `${Math.round(progress)}%`;
+                }
+            }
+        }
+
+        // Combine all chunks into a single Uint8Array
+        const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of chunks) {
+            result.set(chunk, offset);
+            offset += chunk.length;
+        }
+
+        // Store in IndexedDB
+        const db = await openIndexDb();
+        const transaction = db.transaction('nnue', 'readwrite');
+        const store = transaction.objectStore('nnue');
+        await new Promise<void>((resolve, reject) => {
+            const request = store.put(result.buffer, filename);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(new Error(`Failed to store ${filename} in IndexedDB`));
+        });
+
+        console.log(`Successfully downloaded and stored ${filename}`);
+
+    } catch (error) {
+        console.error(`Error downloading ${filename}:`, error);
+        throw error;
+    }
+}
+
+async function downloadAllNnueFiles(): Promise<void> {
+    const progressSection = document.getElementById('progressSection');
+    const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
+    const cancelBtn = document.getElementById('cancelDownloadBtn') as HTMLButtonElement;
+
+    if (progressSection) {
+        progressSection.style.display = 'block';
+    }
+
+    if (downloadBtn) {
+        downloadBtn.disabled = true;
+        downloadBtn.textContent = 'Downloading...';
+    }
+
+    if (cancelBtn) {
+        cancelBtn.disabled = true;
+    }
+
+    try {
+        // Download both files in parallel
+        await Promise.all([
+            downloadNnueFile(NNUE_SMALL, 'smallProgress', 'smallPercent'),
+            downloadNnueFile(NNUE_BIG, 'bigProgress', 'bigPercent')
+        ]);
+
+        console.log('All NNUE files downloaded successfully');
+        hideDownloadDialog();
+
+    } catch (error) {
+        console.error('Error downloading NNUE files:', error);
+        alert('Failed to download files. Please try again.');
+
+        // Reset UI state
+        if (downloadBtn) {
+            downloadBtn.disabled = false;
+            downloadBtn.textContent = 'Download';
+        }
+
+        if (cancelBtn) {
+            cancelBtn.disabled = false;
+        }
+    }
+}
+
 function onDragStart(source: string, piece: string, _position: any, _orientation: string): boolean {
     if (game.isGameOver()) return false;
 
@@ -818,15 +931,13 @@ $(async function () {
     // Set up download dialog event listeners
     const downloadBtn = document.getElementById('downloadBtn');
     const cancelDownloadBtn = document.getElementById('cancelDownloadBtn');
-    
+
     if (downloadBtn) {
         downloadBtn.addEventListener('click', () => {
-            // TODO: Implement download functionality
-            console.log('Download button clicked');
-            hideDownloadDialog();
+            downloadAllNnueFiles();
         });
     }
-    
+
     if (cancelDownloadBtn) {
         cancelDownloadBtn.addEventListener('click', () => {
             hideDownloadDialog();
