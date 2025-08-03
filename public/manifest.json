@@ -2,7 +2,7 @@
   "name": "One Hint Chess",
   "short_name": "One Hint Chess",
   "description": "Chess game with the option to get a hint from Stockfish engine for the next move ",
-  "start_url": "/",
+  "start_url": "/one-hint-chess/",
   "display": "minimal-ui",
   "background_color": "#000000",
   "theme_color": "#000000",
