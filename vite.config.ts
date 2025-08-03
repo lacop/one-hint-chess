@@ -16,9 +16,5 @@ export default defineConfig({
     port: 8000,
     host: '0.0.0.0', // Allow access from local network
     https: true, // Enable HTTPS with self-signed cert
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
-    }
   }
 })
