@@ -50,6 +50,16 @@ let optionsState = {
     blackComputerMoves: 1
 };
 
+// Game archive interface
+interface ArchivedGame {
+    pgn: string;
+    timestamp: number;
+    winner: string;
+    timeControl: string;
+    whiteHints: number;
+    blackHints: number;
+}
+
 const NNUE_BIG = "nn-1c0000000000.nnue";
 const NNUE_SMALL = "nn-37f18f62d772.nnue";
 
@@ -101,6 +111,8 @@ async function loadStockfish(): Promise<void> {
     const bigExists = await getNnue(NNUE_BIG);
     if (!smallExists || !bigExists) {
         console.log("Asking to download NNUE files...");
+        console.log("Small NNUE file exists:", !!smallExists);
+        console.log("Big NNUE file exists:", !!bigExists);
         showDownloadDialog();
         return;
     }
@@ -244,11 +256,8 @@ async function downloadAllNnueFiles(): Promise<void> {
     }
 
     try {
-        // Download both files in parallel
-        await Promise.all([
-            downloadNnueFile(NNUE_SMALL, 'smallProgress'),
-            downloadNnueFile(NNUE_BIG, 'bigProgress')
-        ]);
+        await downloadNnueFile(NNUE_SMALL, 'smallProgress');
+        await downloadNnueFile(NNUE_BIG, 'bigProgress');
 
         console.log('All NNUE files downloaded successfully');
         hideDownloadDialog();
@@ -574,6 +583,13 @@ function confirmNewGame(): void {
     const newGameBtn = $('.corner-btn.bottom-left');
     newGameBtn.text('New Game').removeClass('confirm-pending');
 
+    // Save current game if it has moves and isn't already over
+    if (game.history().length > 0 && !game.isGameOver()) {
+        const currentPlayer = game.turn();
+        const winner = 'Game abandoned';
+        saveGameToArchive(winner);
+    }
+
     // Reset time control and computer moves
     stopClock();
     whiteTimeMs = optionsState.whiteMinutes * 60000;
@@ -592,7 +608,93 @@ function confirmNewGame(): void {
     highlightKingInCheck();
 }
 
+function saveGameToArchive(winner: string): void {
+    const pgn = game.pgn();
+    if (!pgn || game.history().length === 0) {
+        return;
+    }
+
+    const timeControl = `${optionsState.whiteMinutes}+${optionsState.whiteIncrement}`;
+    const archivedGame: ArchivedGame = {
+        pgn: pgn,
+        timestamp: Date.now(),
+        winner: winner,
+        timeControl: timeControl,
+        whiteHints: optionsState.whiteComputerMoves - whiteMovesRemaining,
+        blackHints: optionsState.blackComputerMoves - blackMovesRemaining
+    };
+
+    const existingGames = getArchivedGames();
+    existingGames.unshift(archivedGame);
+
+    localStorage.setItem('oneHintChessArchive', JSON.stringify(existingGames));
+}
+
+function getArchivedGames(): ArchivedGame[] {
+    const stored = localStorage.getItem('oneHintChessArchive');
+    return stored ? JSON.parse(stored) : [];
+}
+
+function showGameArchive(): void {
+    const modal = document.getElementById('gameArchiveModal');
+    if (!modal) return;
+
+    const archiveList = document.getElementById('archiveList');
+    const noGamesMessage = document.getElementById('noGamesMessage');
+    if (!archiveList || !noGamesMessage) return;
+
+    const games = getArchivedGames();
+
+    if (games.length === 0) {
+        noGamesMessage.style.display = 'block';
+        archiveList.innerHTML = '<div class="no-games-message">No archived games yet</div>';
+    } else {
+        noGamesMessage.style.display = 'none';
+        archiveList.innerHTML = '';
+
+        games.forEach((game, index) => {
+            const gameDiv = document.createElement('div');
+            gameDiv.className = 'archived-game';
+            gameDiv.onclick = () => openLichessAnalysis(game.pgn);
+
+            const date = new Date(game.timestamp);
+            const timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            gameDiv.innerHTML = `
+                <div class="game-info">
+                    <div class="game-header">
+                        <span class="game-date">${timeStr}</span>
+                        <span class="game-winner">${game.winner}</span>
+                    </div>
+                    <div class="game-details">
+                        <span class="time-control">${game.timeControl}</span>
+                        <span class="hints-used">W:${game.whiteHints} B:${game.blackHints} hints</span>
+                    </div>
+                </div>
+            `;
+
+            archiveList.appendChild(gameDiv);
+        });
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeGameArchive(): void {
+    const modal = document.getElementById('gameArchiveModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function openLichessAnalysis(pgn: string): void {
+    const encodedPgn = encodeURIComponent(pgn);
+    const lichessUrl = `https://lichess.org/analysis/pgn/${encodedPgn}`;
+    window.open(lichessUrl, '_blank');
+}
+
 function showGameOverModal(winner: string, reason: string): void {
+    saveGameToArchive(winner);
     $('#gameOverTitle').text('Game Over');
     $('#gameOverMessage').text(`${winner} - ${reason}`);
     $('#gameOverModal').show();
@@ -879,6 +981,8 @@ function saveAndStartGame(): void {
 (window as any).adjustComputerMoves = adjustComputerMoves;
 (window as any).saveAndStartGame = saveAndStartGame;
 (window as any).analyzeGame = analyzeGame;
+(window as any).showGameArchive = showGameArchive;
+(window as any).closeGameArchive = closeGameArchive;
 
 // Prevent any scrolling on the entire document
 function preventScroll(e: Event): void {

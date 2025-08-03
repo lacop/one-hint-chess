@@ -48,6 +48,7 @@
         <!-- Corner buttons -->
         <div class="corner-buttons">
             <button class="corner-btn bottom-left" onclick="newGame()">New Game</button>
+            <button class="corner-btn bottom-center" onclick="showGameArchive()">Game Archive</button>
             <button class="corner-btn bottom-right" onclick="showOptions()">Options</button>
         </div>
     </div>
@@ -148,6 +149,19 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Archive Modal -->
+    <div id="gameArchiveModal" class="modal" style="display: none;">
+        <div class="archive-modal-content">
+            <div class="archive-header">
+                <h2>Game Archive</h2>
+                <button class="close-btn" onclick="closeGameArchive()">×</button>
+            </div>
+            <div class="archive-list" id="archiveList">
+                <div class="no-games-message" id="noGamesMessage">No archived games yet</div>
             </div>
         </div>
     </div>
