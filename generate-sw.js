@@ -18,7 +18,7 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
       arrayOfFiles = getAllFiles(fullPath, arrayOfFiles);
     } else if (!file.endsWith('.nnue')) {
       // Convert to web path (relative to dist root)
-      const webPath = '/' + path.relative('dist', fullPath).replace(/\\/g, '/');
+      const webPath = '/one-hint-chess/' + path.relative('dist', fullPath).replace(/\\/g, '/');
       arrayOfFiles.push(webPath);
     }
   });
