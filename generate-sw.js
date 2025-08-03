@@ -1,3 +1,7 @@
+// Hacky but it works - we run this at build time to get list of all
+// the files in `dist/` that should be precached for the app to work offline.
+// There are libraries / vite plugins for this but getting those to work is a pain.
+
 const fs = require('fs');
 const path = require('path');
 
@@ -53,6 +57,7 @@ self.addEventListener('activate', event => {
   );
 });
 
+// Required for SharedArrayBuffer support for stockfish wasm.
 function responseWithHeaders(response) {
   const newHeaders = new Headers(response.headers);
   newHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
@@ -66,7 +71,9 @@ function responseWithHeaders(response) {
 
 self.addEventListener('fetch', event => {
   if (event.request.url.endsWith('.nnue')) {
-    return; // Skip caching for .nnue files
+    // Skip caching for .nnue files, we store them in IndexedDB,
+    // don't want to cache them twice.
+    return;
   }
   event.respondWith(
     caches.match(event.request)

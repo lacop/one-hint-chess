@@ -1,7 +1,7 @@
 {
   "name": "chess-game",
   "version": "1.0.0",
-  "description": "Two-player chess game with move validation",
+  "description": "One hint chess",
   "main": "index.html",
   "scripts": {
     "build": "vite build && node generate-sw.js",

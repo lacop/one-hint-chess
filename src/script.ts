@@ -28,10 +28,10 @@ let newGameConfirmPending = false;
 let newGameRevertTimer: any = null;
 
 // Time control variables
-let whiteTimeMs = 60000; // 1 minute in milliseconds
-let blackTimeMs = 60000; // 1 minute in milliseconds
-let whiteIncrementMs = 1000; // 1 second increment
-let blackIncrementMs = 1000; // 1 second increment
+let whiteTimeMs = 60000; // 1 minute
+let blackTimeMs = 60000;
+let whiteIncrementMs = 1000; // 1 second
+let blackIncrementMs = 1000;
 let clockInterval: any = null;
 let clockStarted = false;
 let lastMoveTime = 0;
@@ -71,7 +71,7 @@ async function openIndexDb(): Promise<IDBDatabase> {
     });
 }
 
-async function getNnue(key): Promise<Uint8Array | null> {
+async function getNnue(key: string): Promise<Uint8Array | null> {
     const db = await openIndexDb();
     return new Promise((resolve, reject) => {
         const transaction = db.transaction('nnue', 'readonly');
