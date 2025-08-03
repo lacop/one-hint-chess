@@ -320,8 +320,7 @@ function onDrop(source: string, target: string): string | void {
         updateClockDisplay();
         highlightKingInCheck();
     } catch (error) {
-        // Handle any exceptions from invalid moves
-        console.log('Invalid move attempted:', error);
+        // Invalid move attempted.
         return 'snapback';
     }
 }
