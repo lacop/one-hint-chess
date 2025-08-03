@@ -130,7 +130,7 @@ async function loadStockfish(): Promise<void> {
 
     try {
         // Load Stockfish script dynamically as ES module
-        const stockfishModule = await eval(`import('/fish/sf171-79.js')`);
+        const stockfishModule = await eval(`import('fish/sf171-79.js')`);
         // Create the Stockfish instance
         stockfish = await stockfishModule.default();
 
@@ -174,7 +174,7 @@ function hideDownloadDialog(): void {
 }
 
 async function downloadNnueFile(filename: string, progressElementId: string): Promise<void> {
-    const url = `/fish/${filename}`;
+    const url = `fish/${filename}`;
 
     try {
         const response = await fetch(url);
