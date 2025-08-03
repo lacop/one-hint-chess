@@ -106,11 +106,44 @@ async function loadStockfish(): Promise<void> {
     }
 
     // Check if SharedArrayBuffer is supported.
+    // This should work after reloading the page after downloading the NNUE files,
+    // since our service worker will set the correct headers.
     if (typeof SharedArrayBuffer === 'undefined') {
         console.warn('SharedArrayBuffer is not supported. Stockfish NNUE will not work.');
         return;
     }
+
     console.log('Loading Stockfish...');
+
+    try {
+        // Load Stockfish script dynamically as ES module
+        const stockfishModule = await eval(`import('/fish/sf171-79.js')`);
+        // Create the Stockfish instance
+        stockfish = await stockfishModule.default();
+
+        // Set up output handler
+        stockfish.listen = (line: string) => {
+            console.log('[stockfish]', line);
+        };
+        stockfish.error = (line: any) => {
+            console.warn('[stockfish]', line);
+        };
+
+        // Load NNUE files
+        const bigBuffer = await getNnue(NNUE_BIG);
+        const smallBuffer = await getNnue(NNUE_SMALL);
+        stockfish.setNnueBuffer(bigBuffer, 0);
+        stockfish.setNnueBuffer(smallBuffer, 1);
+        console.log('NNUE files loaded successfully');
+
+        isStockfishReady = true;
+        $('#blackComputerMoveBtn, #whiteComputerMoveBtn').prop('disabled', false);
+        console.log('Stockfish ready!');
+
+    } catch (error) {
+        // At least offline chess without stockfish can be played.
+        console.error('Failed to load Stockfish:', error);
+    }
 }
 
 function showDownloadDialog(): void {
@@ -640,45 +673,6 @@ function initializeChess(): void {
     updateClockDisplay();
     highlightKingInCheck();
 }
-
-// async function loadStockfish(): Promise<void> {
-//     try {
-//         console.log('Loading Stockfish...');
-
-//         // Load Stockfish script dynamically as ES module
-//         const stockfishModule = await eval(`import('/sf171-79.js')`);
-
-//         // Create the Stockfish instance
-//         stockfish = await stockfishModule.default();
-
-//         // Set up output handler
-//         stockfish.listen = (line: string) => {
-//             console.log('Stockfish:', line);
-//         };
-
-//         // Load NNUE files
-//         try {
-//             const bigResponse = await fetch('./nn-1c0000000000.nnue');
-//             const bigBuffer = await bigResponse.arrayBuffer();
-//             stockfish.setNnueBuffer(new Uint8Array(bigBuffer), 0);
-
-//             const smallResponse = await fetch('./nn-37f18f62d772.nnue');
-//             const smallBuffer = await smallResponse.arrayBuffer();
-//             stockfish.setNnueBuffer(new Uint8Array(smallBuffer), 1);
-
-//             console.log('NNUE files loaded successfully');
-//         } catch (error) {
-//             console.warn('NNUE files failed to load, engine will work with reduced strength');
-//         }
-
-//         isStockfishReady = true;
-//         $('#blackComputerMoveBtn, #whiteComputerMoveBtn').prop('disabled', false);
-//         console.log('Stockfish ready!');
-
-//     } catch (error) {
-//         console.error('Failed to load Stockfish:', error);
-//     }
-// }
 
 function updateComputerMoveProgress(percentage: number): void {
     // Only update progress for the current player's button
