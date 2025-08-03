@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  base: '/one-hint-chess/',
   root: '.',
   build: {
     outDir: 'dist',
