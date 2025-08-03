@@ -101,6 +101,21 @@ async function prepareForOffline(): Promise<void> {
     const bigExists = await getNnue(NNUE_BIG);
     if (!smallExists || !bigExists) {
         console.log("Asking to download NNUE files...");
+        showDownloadDialog();
+    }
+}
+
+function showDownloadDialog(): void {
+    const dialog = document.getElementById('downloadDialog');
+    if (dialog) {
+        dialog.style.display = 'flex';
+    }
+}
+
+function hideDownloadDialog(): void {
+    const dialog = document.getElementById('downloadDialog');
+    if (dialog) {
+        dialog.style.display = 'none';
     }
 }
 
@@ -799,6 +814,24 @@ $(async function () {
 
     await loadChessboard();
     initializeChess();
+
+    // Set up download dialog event listeners
+    const downloadBtn = document.getElementById('downloadBtn');
+    const cancelDownloadBtn = document.getElementById('cancelDownloadBtn');
+    
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => {
+            // TODO: Implement download functionality
+            console.log('Download button clicked');
+            hideDownloadDialog();
+        });
+    }
+    
+    if (cancelDownloadBtn) {
+        cancelDownloadBtn.addEventListener('click', () => {
+            hideDownloadDialog();
+        });
+    }
 
     await prepareForOffline();
 
