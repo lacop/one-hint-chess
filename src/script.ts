@@ -119,7 +119,7 @@ function hideDownloadDialog(): void {
     }
 }
 
-async function downloadNnueFile(filename: string, progressElementId: string, percentElementId: string): Promise<void> {
+async function downloadNnueFile(filename: string, progressElementId: string): Promise<void> {
     const url = `/fish/${filename}`;
 
     try {
@@ -140,7 +140,6 @@ async function downloadNnueFile(filename: string, progressElementId: string, per
         let downloaded = 0;
 
         const progressElement = document.getElementById(progressElementId) as HTMLElement;
-        const percentElement = document.getElementById(percentElementId) as HTMLElement;
 
         while (true) {
             const { done, value } = await reader.read();
@@ -154,9 +153,6 @@ async function downloadNnueFile(filename: string, progressElementId: string, per
                 const progress = (downloaded / total) * 100;
                 if (progressElement) {
                     progressElement.style.width = `${progress}%`;
-                }
-                if (percentElement) {
-                    percentElement.textContent = `${Math.round(progress)}%`;
                 }
             }
         }
@@ -209,8 +205,8 @@ async function downloadAllNnueFiles(): Promise<void> {
     try {
         // Download both files in parallel
         await Promise.all([
-            downloadNnueFile(NNUE_SMALL, 'smallProgress', 'smallPercent'),
-            downloadNnueFile(NNUE_BIG, 'bigProgress', 'bigPercent')
+            downloadNnueFile(NNUE_SMALL, 'smallProgress'),
+            downloadNnueFile(NNUE_BIG, 'bigProgress')
         ]);
 
         console.log('All NNUE files downloaded successfully');
