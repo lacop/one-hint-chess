@@ -33,7 +33,7 @@ const distFiles = getAllFiles('dist');
 const swContent = `const CACHE_NAME = 'one-hint-chess-v1';
 
 // All assets to precache
-const urlsToCache = ${JSON.stringify(['/', ...distFiles], null, 2)};
+const urlsToCache = ${JSON.stringify(['/one-hint-chess/', ...distFiles], null, 2)};
 
 self.addEventListener('install', event => {
   event.waitUntil(
