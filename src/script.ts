@@ -405,7 +405,7 @@ function initializeChess(): void {
         onDragStart: onDragStart,
         onDrop: onDrop,
         onSnapEnd: onSnapEnd,
-        pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
+        pieceTheme: 'chesspieces/wikipedia/{piece}.png',
     };
 
     board = Chessboard('myBoard', config);
@@ -739,7 +739,7 @@ function disableScroll(): void {
 // Initialize when DOM is ready
 $(async function () {
     disableScroll();
-    
+
     try {
         await loadChessboard();
         initializeChess();
