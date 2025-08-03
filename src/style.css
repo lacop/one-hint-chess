@@ -1,0 +1,1007 @@
+@import url('../node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.css');
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #d8d8d8;
+    height: 100vh;
+    height: 100dvh;
+    /* Dynamic viewport height for mobile */
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    /* Prevent pull-to-refresh and overscroll on mobile */
+    overscroll-behavior: none;
+    touch-action: none;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.board-container {
+    width: 100%;
+    max-width: 100vmin;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#myBoard {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 90vmin;
+    max-height: 90vmin;
+    /* Prevent scrolling when touching the board */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.game-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    min-width: 120px;
+}
+
+button:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+button:disabled:hover {
+    background-color: #95a5a6;
+    transform: none;
+}
+
+button.confirm-pending {
+    background-color: #e74c3c !important;
+    animation: pulse 0.3s ease-in-out;
+}
+
+button.confirm-pending:hover {
+    background-color: #c0392b !important;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Progress bar button styling */
+button.thinking {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to right,
+            #3498db 0%,
+            #3498db var(--progress, 0%),
+            #95a5a6 var(--progress, 0%),
+            #95a5a6 100%);
+    transition: none;
+}
+
+button.thinking:hover {
+    background: linear-gradient(to right,
+            #2980b9 0%,
+            #2980b9 var(--progress, 0%),
+            #7f8c8d var(--progress, 0%),
+            #7f8c8d 100%);
+}
+
+/* Turn indicator styles */
+.turn-indicator {
+    width: 100%;
+    text-align: center;
+}
+
+.turn-indicator h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 12px 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 2px solid #3498db;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+        gap: 15px;
+    }
+
+    #myBoard {
+        max-width: 95vmin;
+        max-height: 95vmin;
+    }
+
+    .turn-indicator h3 {
+        font-size: 16px;
+        padding: 10px 16px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px 20px;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+        gap: 10px;
+    }
+
+    .turn-indicator h3 {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+}
+
+.modal-content h2 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    font-size: 24px;
+}
+
+.modal-content p {
+    margin: 0 0 20px 0;
+    color: #555;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.modal-content button {
+    background-color: #27ae60;
+    font-size: 16px;
+    padding: 12px 24px;
+    margin: 0;
+    min-width: 100px;
+}
+
+.modal-content button:hover {
+    background-color: #229954;
+    transform: translateY(-1px);
+}
+
+.modal-content button:first-child {
+    background-color: #3498db;
+}
+
+.modal-content button:first-child:hover {
+    background-color: #2980b9;
+}
+
+/* Ensure modal is mobile friendly */
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .modal-content h2 {
+        font-size: 20px;
+    }
+
+    .modal-content p {
+        font-size: 16px;
+    }
+}
+
+/* Valid move highlighting with dots */
+.highlight-move {
+    position: relative;
+}
+
+.highlight-move::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Different style for squares with pieces (capture moves) */
+.highlight-capture {
+    position: relative;
+}
+
+.highlight-capture::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(220, 20, 60, 0.7);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* King in check highlighting */
+.king-in-check {
+    position: relative;
+}
+
+.king-in-check::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 100, 100, 0.3);
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(255, 69, 69, 0.5);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Clock bar styles */
+.clock-bar {
+    width: 100%;
+    max-width: 600px;
+    background-color: #2c3e50;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-family: 'Courier New', monospace;
+}
+
+.clock-bar.top {
+    margin-bottom: 20px;
+}
+
+.clock-bar.bottom {
+    margin-top: 20px;
+}
+
+.clock-section {
+    flex: 1;
+    padding: 15px 20px;
+    color: white;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.clock-center {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clock-section.left {
+    justify-content: flex-start;
+}
+
+.clock-section.right {
+    justify-content: flex-end;
+}
+
+.clock-bar.active {
+    background-color: #d46f27;
+    box-shadow: 0 4px 12px rgba(142, 68, 173, 0.3);
+}
+
+.clock-bar.active.low-time {
+    background-color: #d35400;
+    animation: pulse-warning 1s ease-in-out infinite;
+}
+
+.clock-bar.active.very-low-time {
+    background-color: #c0392b;
+    animation: pulse-critical 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+@keyframes pulse-critical {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.clock-divider {
+    width: 2px;
+    height: 40px;
+    background-color: #34495e;
+    flex-shrink: 0;
+}
+
+.clock-section .time {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.clock-section .label {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.upside-down {
+    transform: rotate(180deg) !important;
+}
+
+/* Ensure black computer button stays upside down */
+#blackComputerMoveBtn.upside-down {
+    transform: rotate(180deg) !important;
+}
+
+#blackComputerMoveBtn.upside-down:hover {
+    transform: rotate(180deg) translateY(1px) !important;
+}
+
+/* Mobile responsive for clock bar */
+@media (max-width: 768px) {
+    .clock-section {
+        padding: 12px 15px;
+        gap: 8px;
+    }
+
+    .clock-section .time {
+        font-size: 20px;
+    }
+
+    .clock-section .label {
+        font-size: 12px;
+    }
+
+    .clock-divider {
+        height: 35px;
+    }
+}
+
+@media (max-width: 480px) {
+    .clock-section {
+        padding: 10px 12px;
+        gap: 6px;
+    }
+
+    .clock-section .time {
+        font-size: 18px;
+    }
+
+    .clock-section .label {
+        font-size: 11px;
+    }
+
+    .clock-divider {
+        height: 30px;
+    }
+}
+
+/* Computer move buttons in clocks */
+.computer-move-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 40px;
+    min-height: 28px;
+    transition: all 0.2s ease;
+}
+
+.computer-move-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.computer-move-btn:disabled {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.computer-move-btn.thinking {
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.3) var(--progress, 0%),
+            rgba(255, 255, 255, 0.1) var(--progress, 0%),
+            rgba(255, 255, 255, 0.1) 100%);
+}
+
+/* Corner buttons */
+.corner-buttons {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.corner-btn {
+    position: absolute;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    pointer-events: auto;
+    transition: all 0.2s ease;
+    min-height: 40px;
+    z-index: 1001;
+    cursor: pointer;
+}
+
+.corner-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+.corner-btn.bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+.corner-btn.bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+.corner-btn.confirm-pending {
+    background-color: #e74c3c !important;
+}
+
+.corner-btn.confirm-pending:hover {
+    background-color: #c0392b !important;
+}
+
+/* Mobile responsive for corner buttons */
+@media (max-width: 768px) {
+    .corner-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 36px;
+    }
+
+    .corner-btn.bottom-left {
+        bottom: 15px;
+        left: 15px;
+    }
+
+    .corner-btn.bottom-right {
+        bottom: 15px;
+        right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .corner-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        min-height: 32px;
+    }
+
+    .corner-btn.bottom-left {
+        bottom: 10px;
+        left: 10px;
+    }
+
+    .corner-btn.bottom-right {
+        bottom: 10px;
+        right: 10px;
+    }
+
+    .computer-move-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+        min-width: 32px;
+        min-height: 24px;
+    }
+}
+
+/* Options Modal Styles */
+.options-modal-content {
+    background-color: white;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.time-control-section {
+    padding: 15px;
+    text-align: center;
+}
+
+.black-section {
+    background-color: #2c3e50;
+    color: white;
+    border-radius: 16px 16px 0 0;
+}
+
+.white-section {
+    background-color: #ecf0f1;
+    color: #2c3e50;
+    border-radius: 0 0 16px 16px;
+}
+
+.shared-section {
+    background-color: #95a5a6;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.time-control-section h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.shared-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.time-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 5px;
+}
+
+.time-digit-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.time-digit {
+    font-size: 32px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    min-width: 40px;
+    text-align: center;
+}
+
+.time-separator {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0 8px;
+}
+
+.digit-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: currentColor;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.digit-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.white-section .digit-btn {
+    background-color: rgba(44, 62, 80, 0.1);
+    color: #2c3e50;
+    border-color: rgba(44, 62, 80, 0.3);
+}
+
+.white-section .digit-btn:hover {
+    background-color: rgba(44, 62, 80, 0.2);
+}
+
+.preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.preset-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 60px;
+}
+
+.preset-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.save-btn,
+.cancel-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    min-width: 120px;
+}
+
+.save-btn {
+    background-color: #27ae60;
+    color: white;
+}
+
+.save-btn:hover {
+    background-color: #229954;
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.cancel-btn:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Mobile responsive for options modal */
+@media (max-width: 768px) {
+    .options-modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+
+    .time-control-section {
+        padding: 15px;
+    }
+
+    .shared-section {
+        padding: 20px 15px;
+    }
+
+    .time-digit {
+        font-size: 36px;
+        min-width: 50px;
+    }
+
+    .time-separator {
+        font-size: 28px;
+    }
+
+    .digit-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+    }
+
+    .preset-buttons {
+        gap: 8px;
+    }
+
+    .preset-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+        min-width: 50px;
+    }
+
+    .action-buttons {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .save-btn,
+    .cancel-btn {
+        width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .time-digit {
+        font-size: 28px;
+        min-width: 40px;
+    }
+
+    .time-separator {
+        font-size: 22px;
+        margin: 0 5px;
+    }
+
+    .digit-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+
+    .time-display {
+        gap: 10px;
+    }
+}
+
+/* Player settings layout */
+.player-settings {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.setting-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.setting-group h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.computer-moves-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.computer-moves-digit {
+    font-size: 24px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    min-width: 32px;
+    text-align: center;
+}
+
+/* Moves remaining display */
+.moves-remaining {
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0.8;
+    margin-top: 5px;
+    display: block;
+}
+
+.clock-section {
+    flex-direction: column;
+    justify-content: center;
+}
+
+.clock-section .time {
+    margin-bottom: 2px;
+}
+
+/* Mobile adjustments for moves remaining and player settings */
+@media (max-width: 768px) {
+    .moves-remaining {
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .computer-moves-digit {
+        font-size: 28px;
+        min-width: 35px;
+    }
+
+    .player-settings {
+        gap: 10px;
+    }
+
+    .setting-group h4 {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    .time-digit {
+        font-size: 28px;
+    }
+
+    .time-separator {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .moves-remaining {
+        font-size: 11px;
+        margin-top: 2px;
+    }
+
+    .computer-moves-digit {
+        font-size: 24px;
+        min-width: 30px;
+    }
+
+    .player-settings {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .setting-group h4 {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    .time-digit {
+        font-size: 24px;
+    }
+
+    .time-separator {
+        font-size: 18px;
+    }
+
+    .digit-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+}

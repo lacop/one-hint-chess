@@ -1,0 +1,29 @@
+{
+  "name": "chess-game",
+  "version": "1.0.0",
+  "description": "Two-player chess game with move validation",
+  "main": "index.html",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@chrisoakman/chessboardjs": "^1.0.0",
+    "chess.js": "^1.0.0-beta.6",
+    "jquery": "^3.7.1"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.0",
+    "@vitejs/plugin-basic-ssl": "^2.1.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "chess",
+    "game",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT"
+}

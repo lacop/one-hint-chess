@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Chess Game</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Black's clock bar (top) -->
+        <div class="clock-bar top" id="blackClock">
+            <div class="clock-section left">
+                <span class="time upside-down" id="blackTimeTopLeft">1:00</span>
+                <span class="moves-remaining upside-down" id="blackMovesTopLeft">1</span>
+            </div>
+            <div class="clock-center">
+                <button id="blackComputerMoveBtn" class="computer-move-btn upside-down" onclick="makeComputerMove()"
+                    disabled>Computer Move</button>
+            </div>
+            <div class="clock-section right">
+                <span class="time" id="blackTimeTopRight">1:00</span>
+                <span class="moves-remaining" id="blackMovesTopRight">1</span>
+            </div>
+        </div>
+        <div class="board-container">
+            <div id="myBoard"></div>
+        </div>
+        <!-- White's clock bar (bottom) -->
+        <div class="clock-bar bottom" id="whiteClock">
+            <div class="clock-section left">
+                <span class="time upside-down" id="whiteTimeBottomLeft">1:00</span>
+                <span class="moves-remaining upside-down" id="whiteMovesBottomLeft">1</span>
+            </div>
+            <div class="clock-center">
+                <button id="whiteComputerMoveBtn" class="computer-move-btn" onclick="makeComputerMove()"
+                    disabled>Computer Move</button>
+            </div>
+            <div class="clock-section right">
+                <span class="time" id="whiteTimeBottomRight">1:00</span>
+                <span class="moves-remaining" id="whiteMovesBottomRight">1</span>
+            </div>
+        </div>
+
+        <!-- Corner buttons -->
+        <div class="corner-buttons">
+            <button class="corner-btn bottom-left" onclick="newGame()">New Game</button>
+            <button class="corner-btn bottom-right" onclick="showOptions()">Options</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 id="gameOverTitle">Game Over</h2>
+            <p id="gameOverMessage"></p>
+            <div class="modal-buttons">
+                <button onclick="analyzeGame()">Analyze</button>
+                <button onclick="closeModalAndNewGame()">New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Options Modal -->
+    <div id="optionsModal" class="modal" style="display: none;">
+        <div class="options-modal-content">
+            <!-- Black Player Time Control -->
+            <div class="time-control-section black-section">
+                <h3>Black Settings</h3>
+                <div class="player-settings">
+                    <div class="setting-group">
+                        <h4>Time Control</h4>
+                        <div class="time-display">
+                            <div class="time-digit-group">
+                                <button class="digit-btn plus" onclick="adjustTime('black', 'minutes', 1)">+</button>
+                                <span class="time-digit" id="blackMinutes">1</span>
+                                <button class="digit-btn minus" onclick="adjustTime('black', 'minutes', -1)">-</button>
+                            </div>
+                            <span class="time-separator">+</span>
+                            <div class="time-digit-group">
+                                <button class="digit-btn plus" onclick="adjustTime('black', 'increment', 1)">+</button>
+                                <span class="time-digit" id="blackIncrement">1</span>
+                                <button class="digit-btn minus"
+                                    onclick="adjustTime('black', 'increment', -1)">-</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h4>Computer Moves</h4>
+                        <div class="computer-moves-control">
+                            <button class="digit-btn plus" onclick="adjustComputerMoves('black', 1)">+</button>
+                            <span class="computer-moves-digit" id="blackComputerMoves">1</span>
+                            <button class="digit-btn minus" onclick="adjustComputerMoves('black', -1)">-</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shared Options -->
+            <div class="shared-section">
+                <h3>Quick Time Controls</h3>
+                <div class="preset-buttons">
+                    <button class="preset-btn" onclick="setPreset(1, 0)">1+0</button>
+                    <button class="preset-btn" onclick="setPreset(1, 1)">1+1</button>
+                    <button class="preset-btn" onclick="setPreset(3, 2)">3+2</button>
+                    <button class="preset-btn" onclick="setPreset(5, 0)">5+0</button>
+                    <button class="preset-btn" onclick="setPreset(10, 0)">10+0</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="save-btn" onclick="saveAndStartGame()">Save and Start</button>
+                    <button class="cancel-btn" onclick="closeOptions()">Cancel</button>
+                </div>
+            </div>
+
+            <!-- White Player Time Control -->
+            <div class="time-control-section white-section">
+                <h3>White Settings</h3>
+                <div class="player-settings">
+                    <div class="setting-group">
+                        <h4>Time Control</h4>
+                        <div class="time-display">
+                            <div class="time-digit-group">
+                                <button class="digit-btn plus" onclick="adjustTime('white', 'minutes', 1)">+</button>
+                                <span class="time-digit" id="whiteMinutes">1</span>
+                                <button class="digit-btn minus" onclick="adjustTime('white', 'minutes', -1)">-</button>
+                            </div>
+                            <span class="time-separator">+</span>
+                            <div class="time-digit-group">
+                                <button class="digit-btn plus" onclick="adjustTime('white', 'increment', 1)">+</button>
+                                <span class="time-digit" id="whiteIncrement">1</span>
+                                <button class="digit-btn minus"
+                                    onclick="adjustTime('white', 'increment', -1)">-</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <h4>Computer Moves</h4>
+                        <div class="computer-moves-control">
+                            <button class="digit-btn plus" onclick="adjustComputerMoves('white', 1)">+</button>
+                            <span class="computer-moves-digit" id="whiteComputerMoves">1</span>
+                            <button class="digit-btn minus" onclick="adjustComputerMoves('white', -1)">-</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js"></script>
+    <script type="module" src="/src/script.ts"></script>
+</body>
+
+</html>
