@@ -7,15 +7,15 @@ import $ from 'jquery';
 
 // Register service worker
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('SW registered: ', registration);
-      })
-      .catch(registrationError => {
-        console.log('SW registration failed: ', registrationError);
-      });
-  });
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('SW registered: ', registration);
+            })
+            .catch(registrationError => {
+                console.log('SW registration failed: ', registrationError);
+            });
+    });
 }
 
 declare var Chessboard: any;
@@ -50,14 +50,52 @@ let optionsState = {
     blackComputerMoves: 1
 };
 
-function loadScript(src: string): Promise<void> {
+const NNUE_BIG = "nn-1c0000000000.nnue";
+const NNUE_SMALL = "nn-37f18f62d772.nnue";
+
+async function openIndexDb(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-        document.head.appendChild(script);
+        const request = indexedDB.open('one-hint-chess', 1);
+        request.onsuccess = (event) => {
+            resolve((event.target as any).result);
+        };
+        request.onerror = (event) => {
+            reject(new Error('Failed to open IndexedDB'));
+        };
     });
+}
+
+async function getNnue(key): Promise<Uint8Array | null> {
+    const db = await openIndexDb();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction('nnue', 'readonly');
+        const store = transaction.objectStore('nnue');
+        const request = store.get(key);
+        request.onsuccess = (event) => {
+            const result = (event.target as any).result;
+            if (result) {
+                resolve(new Uint8Array(result));
+            } else {
+                resolve(null);
+            }
+        };
+        request.onerror = () => {
+            reject(new Error('Failed to get NNUE data'));
+        };
+    });
+}
+
+async function prepareForOffline(): Promise<void> {
+    console.log('Preparing for offline use...');
+    // Wait for service worker to be ready so our fetch requests can be intercepted
+    await navigator.serviceWorker.ready;
+
+    // Check if we have the NNUE files and prompt to download if not.
+    const smallExists = await getNnue(NNUE_SMALL);
+    const bigExists = await getNnue(NNUE_BIG);
+    if (!smallExists || !bigExists) {
+        console.log("Asking to download NNUE files...");
+    }
 }
 
 function onDragStart(source: string, piece: string, _position: any, _orientation: string): boolean {
@@ -753,13 +791,13 @@ function disableScroll(): void {
 $(async function () {
     disableScroll();
 
-    try {
-        await loadChessboard();
-        initializeChess();
-    } catch (error) {
-        console.error('Failed to initialize chess game:', error);
-    }
+    await loadChessboard();
+    initializeChess();
+
+    await prepareForOffline();
+
+    // TODO: initialize stockfish (can be settimeout.)
+    // Load Stockfish after a short delay to let the UI initialize
+    // setTimeout(loadStockfish, 1000);
 });
 
-// Load Stockfish after a short delay to let the UI initialize
-// setTimeout(loadStockfish, 1000);

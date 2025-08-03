@@ -5,8 +5,8 @@
   "main": "index.html",
   "scripts": {
     "build": "vite build && node generate-sw.js",
-    "dev": "vite",
-    "preview": "vite build && node generate-sw.js && vite preview"
+    "dev": "node generate-sw.js && vite",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@chrisoakman/chessboardjs": "^1.0.0",
