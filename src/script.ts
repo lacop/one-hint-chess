@@ -55,7 +55,8 @@ interface ArchivedGame {
     pgn: string;
     timestamp: number;
     winner: string;
-    timeControl: string;
+    whiteTimeControl: string;
+    blackTimeControl: string;
     whiteHints: number;
     blackHints: number;
 }
@@ -614,12 +615,14 @@ function saveGameToArchive(winner: string): void {
         return;
     }
 
-    const timeControl = `${optionsState.whiteMinutes}+${optionsState.whiteIncrement}`;
+    const whiteTimeControl = `${optionsState.whiteMinutes}+${optionsState.whiteIncrement}`;
+    const blackTimeControl = `${optionsState.blackMinutes}+${optionsState.blackIncrement}`;
     const archivedGame: ArchivedGame = {
         pgn: pgn,
         timestamp: Date.now(),
         winner: winner,
-        timeControl: timeControl,
+        whiteTimeControl: whiteTimeControl,
+        blackTimeControl: blackTimeControl,
         whiteHints: optionsState.whiteComputerMoves - whiteMovesRemaining,
         blackHints: optionsState.blackComputerMoves - blackMovesRemaining
     };
@@ -658,7 +661,15 @@ function showGameArchive(): void {
             gameDiv.onclick = () => openLichessAnalysis(game.pgn);
 
             const date = new Date(game.timestamp);
-            const timeStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeStr = date.getFullYear() + '-' + 
+                           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(date.getDate()).padStart(2, '0') + ' ' +
+                           String(date.getHours()).padStart(2, '0') + ':' +
+                           String(date.getMinutes()).padStart(2, '0') + ':' +
+                           String(date.getSeconds()).padStart(2, '0');
+
+            const whiteTC = game.whiteTimeControl;
+            const blackTC = game.blackTimeControl;
 
             gameDiv.innerHTML = `
                 <div class="game-info">
@@ -667,8 +678,7 @@ function showGameArchive(): void {
                         <span class="game-winner">${game.winner}</span>
                     </div>
                     <div class="game-details">
-                        <span class="time-control">${game.timeControl}</span>
-                        <span class="hints-used">W:${game.whiteHints} B:${game.blackHints} hints</span>
+                        <span class="player-details">White: ${whiteTC}, ${game.whiteHints} hints  Black: ${blackTC}, ${game.blackHints} hints</span>
                     </div>
                 </div>
             `;
@@ -988,8 +998,8 @@ function saveAndStartGame(): void {
 function preventScroll(e: Event): void {
     // Allow touch events on the chess board for piece dragging
     const target = e.target as HTMLElement;
-    if (target && target.closest('#myBoard')) {
-        return; // Allow chess board interactions
+    if (target && (target.closest('#myBoard') || target.closest('.archive-list'))) {
+        return; // Allow chess board interactions and archive scrolling
     }
 
     e.preventDefault();
@@ -1007,10 +1017,10 @@ function disableScroll(): void {
     // Prevent window scrolling
     window.addEventListener('scroll', preventScroll, { passive: false });
 
-    // Prevent touchmove on window but not chess board
+    // Prevent touchmove on window but not chess board or archive
     window.addEventListener('touchmove', function (e) {
         const target = e.target as HTMLElement;
-        if (!target || !target.closest('#myBoard')) {
+        if (!target || (!target.closest('#myBoard') && !target.closest('.archive-list'))) {
             e.preventDefault();
         }
     }, { passive: false });
