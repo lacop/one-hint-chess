@@ -56,6 +56,12 @@ const NNUE_SMALL = "nn-37f18f62d772.nnue";
 async function openIndexDb(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('one-hint-chess', 1);
+        request.onupgradeneeded = (event) => {
+            const db = (event.target as any).result;
+            if (!db.objectStoreNames.contains('nnue')) {
+                db.createObjectStore('nnue');
+            }
+        };
         request.onsuccess = (event) => {
             resolve((event.target as any).result);
         };
