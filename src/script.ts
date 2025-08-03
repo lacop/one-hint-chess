@@ -519,41 +519,41 @@ function addTimeIncrement(): void {
 function getGameResult(): { winner: string; reason: string } {
     const currentPlayer = game.turn();
     const opponentColor = currentPlayer === 'w' ? 'Black' : 'White';
-    
+
     if (game.isCheckmate()) {
-        return { 
-            winner: `${opponentColor} wins`, 
-            reason: 'by checkmate' 
+        return {
+            winner: `${opponentColor} wins`,
+            reason: 'by checkmate'
         };
     } else if (game.isStalemate()) {
-        return { 
-            winner: 'Draw', 
-            reason: 'by stalemate' 
+        return {
+            winner: 'Draw',
+            reason: 'by stalemate'
         };
     } else if (game.isThreefoldRepetition()) {
-        return { 
-            winner: 'Draw', 
-            reason: 'by repetition' 
+        return {
+            winner: 'Draw',
+            reason: 'by repetition'
         };
     } else if (game.isInsufficientMaterial()) {
-        return { 
-            winner: 'Draw', 
-            reason: 'by insufficient material' 
+        return {
+            winner: 'Draw',
+            reason: 'by insufficient material'
         };
     } else if (game.isDraw()) {
         // This catches other draw conditions like 50-move rule
-        return { 
-            winner: 'Draw', 
-            reason: 'by 50-move rule' 
+        return {
+            winner: 'Draw',
+            reason: 'by 50-move rule'
         };
     }
-    
+
     return { winner: '', reason: '' };
 }
 
 function updateStatus(): void {
     const result = getGameResult();
-    
+
     if (result.winner) {
         stopClock();
         showGameOverModal(result.winner, result.reason);
@@ -668,18 +668,14 @@ function getArchivedGames(): ArchivedGame[] {
 }
 
 function showGameArchive(): void {
-    const modal = document.getElementById('gameArchiveModal');
-    if (!modal) return;
-
-    const archiveList = document.getElementById('archiveList');
-    const noGamesMessage = document.getElementById('noGamesMessage');
+    const archiveList = document.getElementById('archive-list');
+    const noGamesMessage = document.getElementById('no-games-message');
     if (!archiveList || !noGamesMessage) return;
 
     const games = getArchivedGames();
 
     if (games.length === 0) {
         noGamesMessage.style.display = 'block';
-        archiveList.innerHTML = '<div class="no-games-message">No archived games yet</div>';
     } else {
         noGamesMessage.style.display = 'none';
         archiveList.innerHTML = '';
@@ -690,12 +686,12 @@ function showGameArchive(): void {
             gameDiv.onclick = () => openLichessAnalysis(game.pgn);
 
             const date = new Date(game.timestamp);
-            const timeStr = date.getFullYear() + '-' + 
-                           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-                           String(date.getDate()).padStart(2, '0') + ' ' +
-                           String(date.getHours()).padStart(2, '0') + ':' +
-                           String(date.getMinutes()).padStart(2, '0') + ':' +
-                           String(date.getSeconds()).padStart(2, '0');
+            const timeStr = date.getFullYear() + '-' +
+                String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                String(date.getDate()).padStart(2, '0') + ' ' +
+                String(date.getHours()).padStart(2, '0') + ':' +
+                String(date.getMinutes()).padStart(2, '0') + ':' +
+                String(date.getSeconds()).padStart(2, '0');
 
             const whiteTC = game.whiteTimeControl;
             const blackTC = game.blackTimeControl;
@@ -716,14 +712,11 @@ function showGameArchive(): void {
         });
     }
 
-    modal.style.display = 'flex';
+    $('#gameArchiveModal').show();
 }
 
 function closeGameArchive(): void {
-    const modal = document.getElementById('gameArchiveModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
+    $('#gameArchiveModal').hide();
 }
 
 function openLichessAnalysis(pgn: string): void {
