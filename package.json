@@ -4,9 +4,9 @@
   "description": "Two-player chess game with move validation",
   "main": "index.html",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node generate-sw.js",
     "dev": "vite",
-    "preview": "vite preview"
+    "preview": "vite build && node generate-sw.js && vite preview"
   },
   "dependencies": {
     "@chrisoakman/chessboardjs": "^1.0.0",
